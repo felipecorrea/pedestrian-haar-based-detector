@@ -2,20 +2,20 @@ import cv2
 import sys
 
 #PATHS
-imagePath = "test1.jpg"
+imagePath = "test3.jpg"
 cascPath = "cascades/haarcascade_pedestrian.xml"
 ######
-
 
 pplCascade = cv2.CascadeClassifier(cascPath)
 image = cv2.imread(imagePath)
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+gray = gray - 20
 
 pedestrians = pplCascade.detectMultiScale(
     gray,
-    scaleFactor=1.4,
-    minNeighbors=15,
-    minSize=(6, 16),
+    scaleFactor=1.2,
+    minNeighbors=10,
+    minSize=(32,96),
     flags = cv2.cv.CV_HAAR_SCALE_IMAGE
 )
 

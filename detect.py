@@ -30,7 +30,7 @@ def normalize_grayimage(image):
 
 def main():
 	#IMG PATHS
-	imagePath = "test3.jpg"
+	imagePath = "test1.jpg"
 	cascPath = "cascades/haarcascade_pedestrian.xml"
 
 	pplCascade = cv2.CascadeClassifier(cascPath)

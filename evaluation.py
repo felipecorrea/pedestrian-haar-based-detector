@@ -3,7 +3,7 @@
 #
 #  evaluation.py
 #  
-#  Copyright 2014 Felipe Correa
+#  Copyright 2014 Felipe Correa (https://github.com/felipecorrea)
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ def main():
 	
 	#IMG PATHS
 	images = glob.glob("img/*.jpg")
-	
+	print images 
 	for filename in images:
 		imagePath = filename
 		cascPath = "cascades/haarcascade_pedestrian.xml"
@@ -73,10 +73,12 @@ def main():
 		#Draw a rectangle around the detected objects
 		for (x, y, w, h) in pedestrians:
 			cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
-		cv2.imwrite("saida_"+filename+".jpg", image)
-		cv2.imshow("Ppl found", image)
-		cv2.waitKey(0)
+		
+		
+		outputname = "testoutput/output_"+filename.split("/")[1]
+		cv2.imwrite(outputname, image)
+		#cv2.imshow("Ppl found", image)
+		#cv2.waitKey(0)
 	
 	return 0
 

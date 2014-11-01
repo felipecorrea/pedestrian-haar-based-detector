@@ -8,16 +8,27 @@ import random
 from matplotlib import pyplot as plt
 ######################################
 
-availablecolors = [(255, 0, 0), (0,0,255), (0,255,0)]
+availablecolors = [(255, 0, 0), (0,0,255), (0,255,0), (255,255,0), (0,255,255), (0,0,0), (255,255,255), (125,220,221), (30,100,30)]
+availablenames = ["batata","cenoura","joseph","maria","ferrugem","abacate","banana","laranja","alface","prego","cadeira","gandalf","frodo",
+"gloin","toin","saruman","legolas"]
 
 class People():
-	def __init__(self, x, y, h, w):
+	#New pedestrian detected
+	def __init__(self, x, y, w, h, color=None, label=None):
 		self.x = x
 		self.y = y
 		self.h = h
+		self.myarray = []
 		self.w = w
-		self.color = availablecolors[random.randint(0,2)]
-		self.label = "batata"
+		if color is None:
+			self.color = availablecolors[random.randint(0,len(availablecolors)-1)]
+		else:
+			self.color = color
+		
+		if label is None:
+			self.label = availablenames[random.randint(0,len(availablenames)-1)]
+		else:
+			self.label = label
 		
 	def get_label(self):
 		return self.label
@@ -29,27 +40,38 @@ class People():
 	def drawLabel(self, image):
 		cv2.putText(image, self.label, (self.x, self.y-10), cv2.FONT_HERSHEY_PLAIN, 1, self.color, 2);
 		return True
-		
-	def generateHistogram(self):
-		pass
-		
-	def compareHistograms(hist):
-		pass
 	
-def generate_histogram(img):
-	hist,bins = np.histogram(img.flatten(),256,[0,256])
+	def cropImg(self,image):
+		self.myarray = image[self.x:self.x+self.w, self.y:self.y+self.h]
+		return self.generateHistogram(self.myarray)
 	
-	#cumulative distribution function calculation
-	cdf = hist.cumsum()
+	def generateHistogram(self,img):
+		hist,bins = np.histogram(img.flatten(),256,[0,256])
+		self.hist = hist
+		return hist
 	
-	plt.plot(cdf_normalized, color = 'b')
-	plt.hist(img.flatten(),256,[0,256], color = 'r')
-	plt.xlim([0,256])
-	plt.legend(('cdf','histogram'), loc = 'upper left')
-	plt.show()
+	def getHistogram(self):
+		return self.hist
 	
-	return hist
 
+def checkSimilarity(image,x,y,w,h, ppl):
+	#temporary crop detected target
+	tempCrop = image[x:x+w, y:y+h]
+	#generate temporary histogram to compare to existant ones
+	tempHist = generateHistogram(tempCrop)
+	
+	if(len(ppl) > 0):
+		for i in ppl:
+			print "oi"
+	else:
+		return True
+	
+	return True
+	
+def generateHistogram(img):
+	hist,bins = np.histogram(img.flatten(),256,[0,256])
+	return hist
+	
 
 def normalize_grayimage(image):
 	image = cv2.equalizeHist(image)
@@ -87,17 +109,22 @@ def main():
 			flags = cv2.cv.CV_HAAR_SCALE_IMAGE
 		)
 
-		print "Found {0} ppl!".format(len(pedestrians))
+		#print "Found {0} ppl!".format(len(pedestrians))
 		
 		
 		ppl = []
 		#Draw a rectangle around the detected objects
 		for (x, y, w, h) in pedestrians:
-			ppl.append(People(x,y,h,w))
-		
+			a = checkSimilarity(image,x,y,w,h,ppl)
+			if(a == True):
+				ppl.append(People(x,y,w,h))
+			else:
+				pass
+				
 		for i in ppl:
 			i.drawRect(image)
 			i.drawLabel(image)
+			
 		
 		outputname = "testoutput/output_"+filename.split("/")[1]
 		cv2.imwrite(outputname, image)

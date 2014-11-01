@@ -43,7 +43,7 @@ class People():
 	
 	def cropImg(self,image):
 		self.myarray = image[self.x:self.x+self.w, self.y:self.y+self.h]
-		return self.generateHistogram(self.myarray)
+		self.generateHistogram(self.myarray)
 	
 	def generateHistogram(self,img):
 		hist,bins = np.histogram(img.flatten(),256,[0,256])
@@ -54,20 +54,48 @@ class People():
 		return self.hist
 	
 
-def checkSimilarity(image,x,y,w,h, ppl):
+# If True = New pedestrian
+# Else, returns  (x, y, w, h, color=None, label=None)
+
+def compareHistograms(image,x,y,w,h, ppl):
 	#temporary crop detected target
 	tempCrop = image[x:x+w, y:y+h]
 	#generate temporary histogram to compare to existant ones
 	tempHist = generateHistogram(tempCrop)
 	
 	if(len(ppl) > 0):
-		for i in ppl:
-			print "oi"
+		b = checkSimilarity(tempHist, ppl, image)
+		if(b):
+			return (b.x, b.y, b.w, b.h, b.color, b.label)
+		else:
+			return None
 	else:
-		return True
+		return None
 	
-	return True
+	return None
 	
+def checkSimilarity(temphist, ppl, image):
+	results = {}
+
+	for i in ppl:
+		hist1 = i.generateHistogram(image)
+		distance = chi2_distance(temphist, hist1)
+		results[distance] = i
+		return i
+
+	results = sorted(results.items())
+	
+	return None
+	
+# quisquare distance calculation for histograms
+def chi2_distance(histA, histB, eps = 1e-10):
+	# compute the chi-squared distance
+	d = 0.5 * np.sum([((a - b) ** 2) / (a + b + eps)
+		for (a, b) in zip(histA, histB)])
+
+	# return the chi-squared distance
+	return d
+
 def generateHistogram(img):
 	hist,bins = np.histogram(img.flatten(),256,[0,256])
 	return hist
@@ -80,6 +108,7 @@ def normalize_grayimage(image):
 	return image
 
 
+ppl = []
 
 def main():
 	#Values for statistical evaluation
@@ -112,18 +141,20 @@ def main():
 		#print "Found {0} ppl!".format(len(pedestrians))
 		
 		
-		ppl = []
 		#Draw a rectangle around the detected objects
 		for (x, y, w, h) in pedestrians:
-			a = checkSimilarity(image,x,y,w,h,ppl)
-			if(a == True):
-				ppl.append(People(x,y,w,h))
+			a = compareHistograms(image,x,y,w,h,ppl)
+			if(a):
+				ppl.pop()
+				ppl.append(People(x,y,w,h, a[4], a[5]))
 			else:
-				pass
+				ppl.append(People(x,y,w,h))
+				
 				
 		for i in ppl:
 			i.drawRect(image)
 			i.drawLabel(image)
+			i.cropImg(image)
 			
 		
 		outputname = "testoutput/output_"+filename.split("/")[1]

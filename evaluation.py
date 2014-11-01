@@ -56,7 +56,7 @@ def main():
 		image = cv2.imread(imagePath)
 		gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 		
-		gray = normalize_grayimage(gray)
+		#gray = normalize_grayimage(gray)
 		 
 		pedestrians = pplCascade.detectMultiScale(
 			gray,
